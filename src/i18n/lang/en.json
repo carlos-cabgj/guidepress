@@ -1,0 +1,11 @@
+{
+  "app.addFileBelowRightFormat": "Add a file below with the right format",
+  "app.add"                    : "Add",
+  "app.description"            : "Description",
+  "app.Status"                 : "Status",
+  "app.Date"                   : "Date",
+  "app.Data"                   : "Data",
+  "app.Calcs"                  : "Calculations",
+  "app.app.google.header"      : "Google Analytics Config",
+  "app.addContent"             : "Add Content"
+}
