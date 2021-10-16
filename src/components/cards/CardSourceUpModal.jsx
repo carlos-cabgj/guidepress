@@ -100,15 +100,11 @@ export default function CardSourceUpModal({statusModal, handleClose}) {
       const reader = new FileReader()
       reader.onload = async (e) => { 
         const json = JSON.parse(e.target.result);
-        const data = {
-          items : json,
-          thumb      : 'archive',
-          thumbColor : 'blue',
-          name       : 'Card',
-          category   : 'card',
-        };
+        json['thumb'] = 'archive';
+        json['thumbColor'] = 'blue';
+        json['category'] = 'card';
 
-        handleClose('card', data)
+        handleClose('card', json)
       };
       reader.readAsText(file)
   }
