@@ -17,11 +17,8 @@ export const setTypeInBase64 = (base64, type) => {
 }
 
 export const forceDownload = async (url, fileName) => {
-  console.log('Preparando para baixar Arquivo!')
-
   const tag = document.createElement('a')
   tag.href = url
-  // tag.download = fileName
   tag.setAttribute('download', '')
   tag.setAttribute('title', fileName)
   tag.target = '_blank'

@@ -1,87 +1,71 @@
-import * as tf from '@tensorflow/tfjs';
+export function calcTfIdfCards (cards, configToken = {}, configFilter = {}) {
 
-export function runModel () {
-  // Define a model for linear regression.
-  const model = tf.sequential();
-  model.add(tf.layers.dense({units: 1, inputShape: [1]}));
-
-  // Prepare the model for training: Specify the loss and the optimizer.
-  model.compile({loss: 'meanSquaredError', optimizer: 'sgd'});
-
-  // Generate some synthetic data for training.
-  const xs = tf.tensor2d([1, 2, 3, 4], [4, 1]);
-  const ys = tf.tensor2d([1, 3, 5, 7], [4, 1]);
-
-  // Train the model using the data.
-  model.fit(xs, ys).then(() => {
-    // Use the model to do inference on a data point the model hasn't seen before:
-    model.predict(tf.tensor2d([5], [1, 1])).print();
-  });
-}
-
-export function calcTfIdfCards (cards, propertyChoosed = 'title') {
-
-  let results = {
-    'tf'  : [],
-    'idf' : []
-  };
-
-  let wordsPerText = {};
+  let results = [];
 
   for(let a in cards){
-    if(cards[a].get('status') !== 'new'){
-      let items = cards[a].get('items');
-      for(let i in items){
-
-        let termsCaseTreated = makeToken(items[i][propertyChoosed], 'lower', 2);
-
-        setWordEncounterPerText(termsCaseTreated, wordsPerText);
-
-        results['tf'][a+'-'+ i] = defineTf(
-          addTermsToDictionary(termsCaseTreated, {}, 2)
-        ) 
+    if(cards[a].get('status') !== 'new' && cards[a].get('active')){
+      let tf = extractTfAllDocuments(cards[a], configToken, configFilter.targetField);
+      let dataCard = {
+        'idCard' : cards[a].get('id'),
+        'tf'  : tf,
+        'idf' : defineIdf(tf)
       }
+      results.push(dataCard);
     }
   }
 
-  results['idf'] = defineIdf(results['tf'], wordsPerText);
-  console.log(results)
+  calcTfIDFFromTfCard(results)
   return results;
 }
 
-function setWordEncounterPerText(terms, words){
-  for(let a in terms){
-    words[terms[a]] = words[terms[a]] ? words[terms[a]] + 1 : 1;
-  }
+function calcTfIDFFromTfCard(dataTreated)
+{
+  dataTreated.forEach((card, cardIndex) => {
+
+    dataTreated[cardIndex]['tf-idf'] = [];
+
+    for(let a in card['tf']){
+
+      let newResults = []
+
+      let dataSet = card['tf'][a]['results'];
+
+      for(let d in dataSet){
+        if(dataTreated[cardIndex]['idf'][d]){
+          newResults.push({
+            term : d,
+            value : dataSet[d] * dataTreated[cardIndex]['idf'][d]
+          })
+        }
+      }
+
+      dataTreated[cardIndex]['tf-idf'].push({
+        results : newResults,
+        posItem : card['tf'][a].posItem,
+        pubDate : card['tf'][a].pubDate
+      });
+    }
+  })
 }
 
-function defineIdf(tfResults, wordsPerText){
+function extractTfAllDocuments(card, configToken, propertyChoosed)
+{
+  let items = card.get('items');
+  let results = [];
 
-  let qtdTexts = Object.keys(tfResults).length;
-  let idf = {};
+  for(let i in items){
+  
+    let termsCaseTreated = makeTokens(configToken, items[i][propertyChoosed]);
 
-  for(let a in wordsPerText){
-    idf[a] = Math.log(qtdTexts / wordsPerText[a]);
+    results.push({
+      'results' : calcTf(
+        addTermsToDictionary(termsCaseTreated, {}, 2)
+      ),
+      'posItem' : i,
+      'pubDate' : items[i]['pubDate'] || ''
+    })
   }
-  return idf;
-}
-
-function defineTf(words){
-  let tf = {};
-  let wordsLength = Object.keys(words).length;
-
-  for(let a in words){
-    tf[a] = words[a] / wordsLength;
-  }
-  return tf;
-}
-
-function makeToken($fieldData, textCase = '', minLength = 1){
-  let choosedFieldFiltered = $fieldData.trim();
-  // let termsSplited         = choosedFieldFiltered.split(\[., -]\);
-  let termsSplited         = choosedFieldFiltered.split(/[., -]/);
-      termsSplited         = termsSplited.map((item) => item.length < minLength ? '' : item);
-  return termsSplited.map((item) => textCase === 'lower' ? item.toLowerCase() : textCase === 'upper' ? item.toUpperCase() : item);
+  return results;
 }
 
 function addTermsToDictionary(terms, dictionary){
@@ -96,4 +80,72 @@ function addTermsToDictionary(terms, dictionary){
     }
   }
   return dictionary;
+}
+
+function calcTf(words){
+  let tf = {};
+  let wordsLength = Object.keys(words).length;
+
+  for(let a in words){
+    tf[a] = words[a] / wordsLength;
+  }
+  return tf;
+}
+
+function defineIdf(tfResults){
+
+  let wordsPerText = {};
+  let idf = {};
+
+  let qtdTexts = Object.keys(tfResults).length;
+
+  for(let a in tfResults){
+    addTermsToDictionary(Object.keys(tfResults[a]['results']), wordsPerText)
+  }
+
+  for(let a in wordsPerText){
+    idf[a] = Math.log(qtdTexts / wordsPerText[a]);
+  }
+
+  return idf;
+}
+
+function makeTokens(args, text = '')
+{
+  let fieldDatawithoutInvisible = text.replace(/[\u0000-\u001F\u007F-\u009F]/g, '');
+  let fieldData = fieldDatawithoutInvisible.replace(/(<([^>]+)>)/gi, "").trim();
+
+  let divider   = args['divider'];
+  let textCase  = args['case'] ? args['case'] : null;
+  let minLength = args['minLength'] ? args['minLength'] : 1;
+  let ngrams    = args['ngrams'] ? args['ngrams'] : 1;
+  
+  let choosedFieldFiltered = fieldData.trim();
+  var expression           = new RegExp(divider, 'gi');
+  let termsSplited         = choosedFieldFiltered.split(expression);
+
+  termsSplited = termsSplited.map((item) => item.length < minLength ? '' : item);
+      
+  let termsCaseTreated = termsSplited.map(
+    (item) => 
+      textCase === 'lower' ?
+        item.toLowerCase() : textCase === 'upper' ?
+          item.toUpperCase() : item
+  );
+
+  let finalData = applyNgrams(termsCaseTreated, ngrams);
+
+  return finalData;
+}
+
+function applyNgrams(arrayOfSplitedData, ngrams){
+  let newArray = [];
+  for(let a = 0; a + ngrams < arrayOfSplitedData.length; ++a){
+    let newString = '';
+    for(let i = 0; i  < ngrams; ++i){
+      newString += (i === 0 ? '' : ' ') + arrayOfSplitedData[a + i];
+    }
+    newArray.push(newString);
+  }
+  return newArray;
 }

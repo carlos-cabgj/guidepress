@@ -1,15 +1,13 @@
-import { useState } from 'react';
-// import {runModel} from '../../services/Ai/Main.js';
+import React, { useState, useEffect } from 'react';
 import MainHeader from '../../components/header/MainHeader.jsx';
-import DataContents from '../../components/download/DataContents.jsx';
+import SourceContents from '../../components/download/SourceContents.jsx';
 
 import CalcPanel from '../../components/panel/CalcPanel.jsx';
+import ConfigPanel from '../../components/panel/ConfigPanel.jsx';
+import TokenizacaoPanel from '../../components/panel/TokenizacaoPanel.jsx';
+import FilteringAndSetPanel from '../../components/panel/FilteringAndSetPanel.jsx';
 
-import DataEntity from '../../entities/DataEntity.js'
-
-//TESTERS
-import {feeds} from '../../dataG1.js';
-//
+import SourceEntity from '../../entities/SourceEntity.js'
 
 import {
     Divider
@@ -17,20 +15,91 @@ import {
 
 export default function Home() {
 
-    let iniCard = feeds[0];
-    iniCard['status'] = 'ok';
-    // const [cardsData, setCardsData ] = useState([1]);
-    const [cardsData, setCardsData] = useState([new DataEntity(iniCard)]);
+  const [cardsSource, setCardsSource] = useState([new SourceEntity()]);
 
-    // runModel()
+  const [configFilter, setConfigFilter] = useState({
+    'rssHostDownload1': 'https://api.rss2json.com/v1/api.json',
+    'rssHostParam1'   : 'rss_url',
+    'minItemPerCard'   : 1,
+    'minCharsPerItem'   : 0,
+    'minDate'   : null,
+    'maxDate'   : null,
+    'targetField' : 'content',
+    'targetCardForComparison' : '',
+  });
 
-    return (
-      <div>
-        <MainHeader/>
-        <DataContents cardsInput={cardsData} setCardsInput={setCardsData}/>
-        <Divider variant="middle" />
-        <CalcPanel cardsInput={cardsData}/>
-        <Divider variant="middle" />
+  const [configToken, setConfigToken] = useState({
+    'divider' : '[-.,;!?\\\(\)\"\' ]',
+    'ngrams' : 1,
+    'minLength' : 2,
+    'case' : '',
+  });
+
+  useEffect(() => {
+    setCardsSource(cardsSource)
+  }, [cardsSource] )
+
+  const setConfigFilterCallback = (newConfig) => {
+    setConfigFilter(newConfig)
+  }
+
+  const setCardsSourceCallback = (objCollection) => {
+
+    let newArray = [...objCollection];
+
+    if(newArray[newArray.length - 1].get('status') !== 'new'){
+      newArray.push(new SourceEntity());
+    }
+
+    setCardsSource(newArray)
+  }
+
+  const setConfigTokenCallback = (data) => {
+    setConfigToken(data)
+  }
+
+  return (
+    <div>
+      <MainHeader/>
+
+      <SourceContents cardsInput={cardsSource} setCardsInput={setCardsSourceCallback}/>
+
+      <Divider variant="middle" />
+
+      <div style={{ backgroundColor: '#D4F1F4'}}>
+        <ConfigPanel 
+          configInput={configFilter}
+          cardsInput={cardsSource} 
+          configToken={configToken}
+
+          setConfigFilterCallback={setConfigFilterCallback} 
+          setCardsSourceCallback={setCardsSourceCallback}
+          setConfigTokenCallback={setConfigTokenCallback}
+          />
       </div>
-    )
+      <Divider variant="middle" />
+
+      <TokenizacaoPanel 
+        configToken={configToken} 
+        callbackLoadData={setConfigTokenCallback}/>
+
+      <Divider variant="middle" />
+
+      <FilteringAndSetPanel 
+        cardsSource={cardsSource} 
+        configInput={configFilter}
+        setConfigFilterCallback={setConfigFilterCallback} 
+        />
+
+      <Divider variant="middle" />
+
+      <div style={{ backgroundColor: '#75E6DA'}}>
+        <CalcPanel 
+          cardsInput={cardsSource} 
+          configToken={configToken}
+          configFilter={configFilter}
+        />
+      </div>
+    </div>
+  )
 }
