@@ -33,6 +33,7 @@ export default function Home() {
     'ngrams' : 1,
     'minLength' : 2,
     'case' : '',
+    'stopWords' : 'fato',
   });
 
   useEffect(() => {
@@ -47,7 +48,7 @@ export default function Home() {
 
     let newArray = [...objCollection];
 
-    if(newArray[newArray.length - 1].get('status') !== 'new'){
+    if(newArray.length === 0 || newArray[newArray.length - 1].get('status') !== 'new'){
       newArray.push(new SourceEntity());
     }
 
@@ -71,7 +72,6 @@ export default function Home() {
           configInput={configFilter}
           cardsInput={cardsSource} 
           configToken={configToken}
-
           setConfigFilterCallback={setConfigFilterCallback} 
           setCardsSourceCallback={setCardsSourceCallback}
           setConfigTokenCallback={setConfigTokenCallback}

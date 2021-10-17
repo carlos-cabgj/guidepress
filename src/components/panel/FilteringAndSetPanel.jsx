@@ -1,6 +1,5 @@
 
 import React from "react";
-
 import DateFnsUtils from '@date-io/date-fns';
 import {
   Grid,
@@ -93,6 +92,7 @@ export default function FilteringAndSetPanel({
   const handleUpdConfig = (key, value) => {
     let newConfigs = {...configInput};
     newConfigs[key] = value;
+    console.log(newConfigs)
     setConfigFilterCallback(newConfigs)
   }
 
@@ -148,9 +148,10 @@ export default function FilteringAndSetPanel({
             {renderSelectTypes()}
           </Grid>
         </Grid>
-
-        <Grid item xs={6}>
-          <Typography variant="h6" gutterBottom>
+        <Grid item xs={12}>
+        </Grid>
+        <Grid item xs={4}>
+          <Typography variant="h7" gutterBottom>
             Mínimo de itens no card (0 = sem limite)
           </Typography>
             <TextField 
@@ -168,9 +169,9 @@ export default function FilteringAndSetPanel({
               variant="outlined"
             />
         </Grid>
-        <Grid item xs={6}>
-          <Typography variant="h6" gutterBottom>
-            Mínimo de conteúdo em um item de card (0 = sem limite)
+        <Grid item xs={4}>
+          <Typography variant="h7" gutterBottom>
+            Tamanho Mínimo do documento (0 = sem limite)
           </Typography>
             <TextField 
               onChange={(event) => handleUpdConfig('minCharsPerItem', parseInt(event.target.value))}

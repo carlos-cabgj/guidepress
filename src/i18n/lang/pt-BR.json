@@ -14,6 +14,7 @@
   "app.tokenizerCaseLabel"      : "Tipo de Caixa",
   "app.tokenizerCaseUpperLabel" : "Alta",
   "app.tokenizerCaseLowerLabel" : "Baixa",
+  "app.tokenizerStopWordsLabel" : "Termos Bloqueadas, por vírgula (StopWords)",
   "app.FilterAndSetTitle"       : "Filtrar e Configurar",
   "app.FilterAndSetFieldTitle"  : "Titulo",
   "app.FilterAndSetFieldContent": "Conteúdo",

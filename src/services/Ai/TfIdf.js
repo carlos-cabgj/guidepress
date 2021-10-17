@@ -54,7 +54,7 @@ function extractTfAllDocuments(card, configToken, propertyChoosed)
   let results = [];
 
   for(let i in items){
-  
+  // 
     let termsCaseTreated = makeTokens(configToken, items[i][propertyChoosed]);
 
     results.push({
@@ -133,9 +133,24 @@ function makeTokens(args, text = '')
           item.toUpperCase() : item
   );
 
-  let finalData = applyNgrams(termsCaseTreated, ngrams);
+  let dataWithNgrams = applyNgrams(termsCaseTreated, ngrams);
+
+  let finalData = !args['stopWords'] ? 
+    dataWithNgrams : 
+    applyStopWords(args['stopWords'].split(','), dataWithNgrams);
 
   return finalData;
+}
+
+function applyStopWords(stopWords, arrayOfSplitedData){
+  return arrayOfSplitedData.filter((term) => { 
+    for(let a in stopWords){
+      if(stopWords[a] == term){
+        return false;
+      }
+    }
+    return true;
+  });
 }
 
 function applyNgrams(arrayOfSplitedData, ngrams){

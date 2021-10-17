@@ -176,9 +176,9 @@ export default function CardSourceUpModal({statusModal, handleClose}) {
               onChange={handleChange}
             />
             <p></p>
-            <Typography variant="body2" gutterBottom>
+            {/* <Typography variant="body2" gutterBottom>
               <i>arquivo txt com conteúdo para importar um documento só</i>
-            </Typography>
+            </Typography> */}
             <Typography variant="body2" gutterBottom>
               <Button onClick={downloadFormat1} variant="outlined" color="secondary">
                 <b>* Formato 2 </b>

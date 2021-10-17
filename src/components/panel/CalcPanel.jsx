@@ -37,6 +37,7 @@ const colorsHourPie = [
   'rgb(121, 2, 212)', //23
   'rgb(63, 1, 110)', //00
 ];
+
 export default function CalcPanel({ cardsInput, configToken, configFilter}) {
 
   const [tfIdf, setTfIdf] = useState([]);
@@ -351,8 +352,6 @@ export default function CalcPanel({ cardsInput, configToken, configFilter}) {
       {
         values : values, 
         labels : labels,
-        // x : values, 
-        // y : labels,
         type: 'pie',
         hole: .2,
         mode: 'label+percent+name',
@@ -368,7 +367,7 @@ export default function CalcPanel({ cardsInput, configToken, configFilter}) {
         style={{width: "100%", height: "100%"}}
         useResizeHandler={false}
         layout={ {
-          title: 'Mais por hora',
+          title: 'Horários com mais publicações',
           showlegend: true,
         } }
       />
@@ -393,7 +392,7 @@ export default function CalcPanel({ cardsInput, configToken, configFilter}) {
         style={{width: "100%", height: "100%"}}
         useResizeHandler={true}
         layout={ {
-          title: 'Mais importântes'
+          title: 'Mais bem avaliados'
         } }
       />
   }
@@ -404,46 +403,44 @@ export default function CalcPanel({ cardsInput, configToken, configFilter}) {
     let dataToPlot = [];
 
     axis_x.forEach((hour) => {
-      plotDataHours[hour] && plotDataHours[hour].forEach(
-      (itemDay, indexDay) => {
-        dataToPlot.push({
-          x: [hour],
-          y: [itemDay['value']],
-          type: 'bar',
-          name: itemDay['term'],
-          marker: {color: randomColor()},
+      let axis_y = [];
+      if(plotDataHours[hour]){
+        let array = plotDataHours[hour];
+        array.sort((a,b)=> a['value'] - b['value']);
+        array.forEach(
+        (itemDay, indexDay) => {
+
+          dataToPlot.push({
+            x: [hour+"h"],
+            y: [itemDay['value']],
+            type: 'bar',
+            name: itemDay['term'],
+            marker: {color: randomColor({
+              luminosity: 'dark',
+              seed : indexDay,
+            })},
+          })
         })
-      })
+      }
     })
 
     return <Plot
         data={dataToPlot}
-        // style={{width: "100%", height: "100%"}}
-        useResizeHandler={false}
+        style={{width: "100%", height: "100%"}}
+        config={{responsive: true}}
         layout={ {
-          // xaxis : { tickangle: -45},
-          // yaxis: {
-          //   zeroline: true,
-          //   gridwidth: 0,
-          //   width:0,
-          // },
-          funnelgap:0,
-          funnelgroupgap:0,
-          waterfallgap:0,
-          waterfallgroupgap:0,
-          boxgap:0,
-          boxgroupgap:0,
-          violingap:0,
-          violingroupgap:0,
-          // autosize:true,
-          margin:0,
-          tracegroupgap:0,
-          bargap :0,
-          bargroupgap: 0,
-          // bargap :0.05,
-          // bargroupgap: 0.1,
-          title: 'Horas',
-          // margin: {"t": 0, "b": 0, "l": 0, "r": 0},
+          xaxis : { tickangle: -45},
+          barmode: 'group',
+          bargap :0.2,
+          bargroupgap: 0.1,
+            line: {
+          width: 2.5,
+          margin: 1
+      },
+          yaxis: {
+            zeroline: true,
+          },
+          title: 'Melhores por Horário',
         } }
       />
   }
@@ -470,12 +467,12 @@ export default function CalcPanel({ cardsInput, configToken, configFilter}) {
 
     return <Plot
         data={dataToPlot}
-        // style={{width: "100%", height: "100%"}}
+        style={{width: "100%", height: "100%"}}
         layout={ {
           barmode:"group",
           bargap :0.2,
           bargroupgap: 0.1,
-          title: 'Dias da Semana'
+          title: 'Melhores por dia da semana'
         } }
       />
   }

@@ -119,6 +119,19 @@ export default function TokenizacaoPanel({configToken, callbackLoadData}) {
             label="" 
             variant="outlined" />
         </Grid>
+        <Grid item xs={2}>
+          <FormattedMessage id="app.tokenizerStopWordsLabel" />
+        </Grid>
+        <Grid item xs={4}>
+          <TextField 
+            onChange={(event) => handleUpdConfig('stopWords', event.target.value)}
+            label="" 
+            type="text"
+            fullWidth
+            value={configs.stopWords}
+            variant="outlined"
+          />
+        </Grid>
       </Grid>
     </div>
   )

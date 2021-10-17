@@ -17,7 +17,7 @@ import SourceEntity from '../../entities/SourceEntity.js'
 
 export default function ConfigPanel({
   configInput, 
-  tokenConfig,
+  configToken,
   cardsInput, 
   setConfigFilterCallback,
   setCardsSourceCallback,
@@ -66,7 +66,6 @@ export default function ConfigPanel({
     reader.readAsText(file)
   }
 
-
   const loadFileConfig = async (data) => 
   {
     for(let i in data['cards']){
@@ -75,10 +74,11 @@ export default function ConfigPanel({
 
     setConfigFilterCallback(data['config']);
     setCardsSourceCallback([...data['cards']]);
-    setConfigTokenCallback(data['tokenConfig']);
+    setConfigTokenCallback(data['configToken']);
   }
 
   const sendBackUpToDownload = async () => {
+    console.log(generateBackUpData())
     await sendDownload('data-guide-press.json', generateBackUpData());
   }
 
@@ -93,8 +93,8 @@ export default function ConfigPanel({
     }
 
     let data = {
-      "config"     : config,
-      "tokenConfig": tokenConfig,
+      "config"     : configInput,
+      "configToken": configToken,
       "cards"      : cardsData,
     };
     return data;
