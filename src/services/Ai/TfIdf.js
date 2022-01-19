@@ -7,6 +7,7 @@ export function calcTfIdfCards (cards, configToken = {}, configFilter = {}) {
       let tf = extractTfAllDocuments(cards[a], configToken, configFilter.targetField);
       let dataCard = {
         'idCard' : cards[a].get('id'),
+        'category' : cards[a].get('category'),
         'tf'  : tf,
         'idf' : defineIdf(tf)
       }
@@ -32,17 +33,24 @@ function calcTfIDFFromTfCard(dataTreated)
 
       for(let d in dataSet){
         if(dataTreated[cardIndex]['idf'][d]){
-          newResults.push({
-            term : d,
-            value : dataSet[d] * dataTreated[cardIndex]['idf'][d]
-          })
+          let tfidf = dataSet[d] * dataTreated[cardIndex]['idf'][d];
+
+          if(tfidf > 0.01){
+            newResults.push({
+              term : d,
+              value : tfidf
+            })
+          }
         }
       }
 
       dataTreated[cardIndex]['tf-idf'].push({
         results : newResults,
         posItem : card['tf'][a].posItem,
-        pubDate : card['tf'][a].pubDate
+        pubDate : card['tf'][a].pubDate,
+        categories : card['tf'][a].categories,
+        author : card['tf'][a].author
+
       });
     }
   })
@@ -62,10 +70,20 @@ function extractTfAllDocuments(card, configToken, propertyChoosed)
         addTermsToDictionary(termsCaseTreated, {}, 2)
       ),
       'posItem' : i,
+      'author' :  items[i]['author'],
+      'categories' :  chooseCategories(items[i]['categories']),
       'pubDate' : items[i]['pubDate'] || ''
     })
   }
   return results;
+}
+
+function chooseCategories($field){
+  if(typeof $field === 'object'){
+    return $field.join('-');
+  }else{
+    return $field || '';
+  }
 }
 
 function addTermsToDictionary(terms, dictionary){

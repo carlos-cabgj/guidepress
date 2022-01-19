@@ -6,7 +6,7 @@ import {
 import Typography from "@material-ui/core/Typography";
 import {FormattedMessage} from 'react-intl';
 
-import CardSource from '../cards/CardSource';
+import CardSource from '../cards/CardSource.jsx';
 import CardSourceSetModal from '../cards/CardSourceSetModal.jsx';
 import CardSourceUpModal from '../cards/CardSourceUpModal.jsx';
 import {sendDownload} from '../../services/Content/File';

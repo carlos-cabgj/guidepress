@@ -1,4 +1,4 @@
-import EntityAbstract from './EntityAbstract';
+import EntityAbstract from './EntityAbstract.jsx';
 import { v4 as uuidv4 } from 'uuid';
 
 export default class SourceEntity extends EntityAbstract
