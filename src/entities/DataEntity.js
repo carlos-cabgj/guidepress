@@ -18,10 +18,8 @@ export default class DataEntity extends Component {
       status     : 'new' // new, loaded, error
     }
     if(data){
-    console.log(data)
       this.fill(data)
     }
-    console.log(this.attrs)
   }
 
   // validatorsAttrs = {

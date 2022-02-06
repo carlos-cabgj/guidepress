@@ -7,7 +7,7 @@ import ConfigPanel from '../../components/panel/ConfigPanel.jsx';
 import TokenizacaoPanel from '../../components/panel/TokenizacaoPanel.jsx';
 import FilteringAndSetPanel from '../../components/panel/FilteringAndSetPanel.jsx';
 
-import SourceEntity from '../../entities/SourceEntity.js'
+import SourceEntity from '../../entities/SourceEntity'
 
 import {
     Divider
@@ -15,7 +15,10 @@ import {
 
 export default function Home() {
 
-  const [cardsSource, setCardsSource] = useState([new SourceEntity()]);
+
+  const [cardsSource, setCardsSource] = useState([
+    new SourceEntity(),
+  ]);
 
   const [configFilter, setConfigFilter] = useState({
     'rssHostDownload1': 'https://api.rss2json.com/v1/api.json',
@@ -26,6 +29,9 @@ export default function Home() {
     'maxDate'   : null,
     'targetField' : 'content',
     'targetCardForComparison' : '',
+    'idfCut' : 5,
+    'treeCut' : 0,
+    'percentTrain' : 50
   });
 
   const [configToken, setConfigToken] = useState({
@@ -33,12 +39,10 @@ export default function Home() {
     'ngrams' : 1,
     'minLength' : 2,
     'case' : '',
-    'stopWords' : 'fato',
+    'stopWords' : 'de,em,os',
   });
 
-  useEffect(() => {
-    setCardsSource(cardsSource)
-  }, [cardsSource] )
+  const [modelTree, setModelTree] = useState({});
 
   const setConfigFilterCallback = (newConfig) => {
     setConfigFilter(newConfig)
@@ -70,6 +74,8 @@ export default function Home() {
       <div style={{ backgroundColor: '#D4F1F4'}}>
         <ConfigPanel 
           configInput={configFilter}
+          modelTree={modelTree}
+          setModelTree={setModelTree}
           cardsInput={cardsSource} 
           configToken={configToken}
           setConfigFilterCallback={setConfigFilterCallback} 
@@ -89,12 +95,16 @@ export default function Home() {
         cardsSource={cardsSource} 
         configInput={configFilter}
         setConfigFilterCallback={setConfigFilterCallback} 
+        tree={modelTree}
+        setTree={setModelTree}
         />
 
       <Divider variant="middle" />
 
       <div style={{ backgroundColor: '#75E6DA'}}>
         <CalcPanel 
+          modelTree={modelTree}
+          setModelTree={setModelTree}
           cardsInput={cardsSource} 
           configToken={configToken}
           configFilter={configFilter}

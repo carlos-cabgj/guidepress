@@ -81,8 +81,6 @@ export default function CardSource({
   handleOpenSetModal, 
   handleUpdCard 
 }) {
-
-
   const classes = useStyles();
   const [item, setItem] = React.useState(sourceObj);
 

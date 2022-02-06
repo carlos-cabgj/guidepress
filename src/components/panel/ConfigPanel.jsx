@@ -19,6 +19,8 @@ export default function ConfigPanel({
   configInput, 
   configToken,
   cardsInput, 
+  modelTree,
+  setModelTree,
   setConfigFilterCallback,
   setCardsSourceCallback,
   setConfigTokenCallback
@@ -68,17 +70,24 @@ export default function ConfigPanel({
 
   const loadFileConfig = async (data) => 
   {
-    for(let i in data['cards']){
-      data['cards'][i] = new SourceEntity(data['cards'][i])
+    if(data?.config){
+      setConfigFilterCallback(data['config']);
     }
-
-    setConfigFilterCallback(data['config']);
-    setCardsSourceCallback([...data['cards']]);
-    setConfigTokenCallback(data['configToken']);
+    if(data?.cards){
+      for(let i in data['cards']){
+        data['cards'][i] = new SourceEntity(data['cards'][i])
+      }
+      setCardsSourceCallback([...data['cards']]);
+    }
+    if(data?.configToken){
+      setConfigTokenCallback(data['configToken']);
+    }
+    if(data?.modelTree){
+      setModelTree(data.modelTree);
+    }
   }
 
   const sendBackUpToDownload = async () => {
-    console.log(generateBackUpData())
     await sendDownload('data-guide-press.json', generateBackUpData());
   }
 
@@ -96,6 +105,7 @@ export default function ConfigPanel({
       "config"     : configInput,
       "configToken": configToken,
       "cards"      : cardsData,
+      "modelTree" : modelTree
     };
     return data;
   }
@@ -108,7 +118,7 @@ export default function ConfigPanel({
 
       <Grid container spacing={2}>
         <Grid item xs={2} md={2} sm={2}>
-          <Button variant="contained" onClick={sendBackUpToDownload}color="primary">
+          <Button variant="contained" onClick={sendBackUpToDownload} color="primary">
             Download Base Completa
           </Button>
           <TextField 
@@ -117,16 +127,13 @@ export default function ConfigPanel({
             label="Link Rss" 
             fullWidth
             value={config.rssHostDownload1}
-            defaultValue={config.rssHostDownload1}
             />
           <TextField 
-          
             onChange={(event) => handleUpdConfig('rssHostParam1', event.target.value)}
             id="standard-basic" 
             label="Param Rss" 
             fullWidth
             value={config.rssHostParam1}
-            defaultValue={config.rssHostParam1}
             />
 
         </Grid>

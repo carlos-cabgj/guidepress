@@ -28,8 +28,7 @@ export default function PlotComparison({ similarityList }) {
       }
     ];
 
-    return 
-      <Plot
+    return <Plot
         data={dataToPlot}
         style={{width: "100%", height: "100%"}}
         useResizeHandler={true}

@@ -7,11 +7,12 @@ export default function PlotTree({ dataToPlot }) {
     return printNode(dataToPlot?.modelTree?.model)
   }
 
-  const printNode = (node) => {
+  const printNode = (node, indexParent = 0) => {
     return node?.vals ? 
       node.vals.map((item, index)=>{
-      return <TreeNode label={<div>{node?.name} <br></br> {item?.name}</div>}>
-          {printNode(item?.child)}
+      return <TreeNode key={'nodeTree'+indexParent+'-'+index} 
+                label={<div>{item?.name}</div>}>
+          {printNode(item?.child, indexParent+'-'+index)}
       </TreeNode>})
       :
       (<TreeNode label={<div>{node?.val}</div>}>

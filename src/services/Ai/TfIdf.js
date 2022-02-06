@@ -35,22 +35,19 @@ function calcTfIDFFromTfCard(dataTreated)
         if(dataTreated[cardIndex]['idf'][d]){
           let tfidf = dataSet[d] * dataTreated[cardIndex]['idf'][d];
 
-          if(tfidf > 0.01){
             newResults.push({
               term : d,
               value : tfidf
             })
-          }
         }
       }
 
       dataTreated[cardIndex]['tf-idf'].push({
-        results : newResults,
-        posItem : card['tf'][a].posItem,
-        pubDate : card['tf'][a].pubDate,
-        categories : card['tf'][a].categories,
-        author : card['tf'][a].author
-
+        results   : newResults,
+        posItem   : card['tf'][a].posItem,
+        pubDate   : card['tf'][a].pubDate,
+        categories: card['tf'][a].categories,
+        author    : card['tf'][a].author
       });
     }
   })
@@ -130,32 +127,46 @@ function defineIdf(tfResults){
 
 function makeTokens(args, text = '')
 {
-  let fieldDatawithoutInvisible = text.replace(/[\u0000-\u001F\u007F-\u009F]/g, '');
-  let fieldData = fieldDatawithoutInvisible.replace(/(<([^>]+)>)/gi, "").trim();
+  let fieldData = text.replace(/&lt;/g, '<', 'g');
+  fieldData = fieldData.replace(/&gt;/g, ">");
+  fieldData = fieldData.replace(/<[^>]*>/gi, "").trim();
+  let fieldDatawithoutInvisible = fieldData.replace(/[\u0000-\u001F\u007F-\u009F]/g, '');
 
   let divider   = args['divider'];
   let textCase  = args['case'] ? args['case'] : null;
   let minLength = args['minLength'] ? args['minLength'] : 1;
   let ngrams    = args['ngrams'] ? args['ngrams'] : 1;
   
-  let choosedFieldFiltered = fieldData.trim();
+  let choosedFieldFiltered = fieldDatawithoutInvisible.trim();
   var expression           = new RegExp(divider, 'gi');
   let termsSplited         = choosedFieldFiltered.split(expression);
+  
+  let termsMinLength = [];
 
-  termsSplited = termsSplited.map((item) => item.length < minLength ? '' : item);
+  for(let i in termsSplited){
+    if(termsSplited[i].length >= minLength){
+      termsMinLength.push(termsSplited[i])
+    }
+  }
       
-  let termsCaseTreated = termsSplited.map(
+  let termsCaseTreated = termsMinLength.map(
     (item) => 
       textCase === 'lower' ?
         item.toLowerCase() : textCase === 'upper' ?
           item.toUpperCase() : item
   );
 
-  let dataWithNgrams = applyNgrams(termsCaseTreated, ngrams);
+  let stopWords = args['stopWords'].split(',');
+
+  let dataWithNgrams = applyNgrams(
+    applyStopWords(stopWords, termsCaseTreated),
+    ngrams
+  );
+
 
   let finalData = !args['stopWords'] ? 
     dataWithNgrams : 
-    applyStopWords(args['stopWords'].split(','), dataWithNgrams);
+    applyStopWords(stopWords, dataWithNgrams);
 
   return finalData;
 }
@@ -163,7 +174,7 @@ function makeTokens(args, text = '')
 function applyStopWords(stopWords, arrayOfSplitedData){
   return arrayOfSplitedData.filter((term) => { 
     for(let a in stopWords){
-      if(stopWords[a] == term){
+      if(stopWords[a] === term){
         return false;
       }
     }
