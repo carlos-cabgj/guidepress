@@ -13,8 +13,7 @@ import {
     Divider
 } from "@material-ui/core";
 
-export default function Home() {
-
+export default function Home({setResults}) {
 
   const [cardsSource, setCardsSource] = useState([
     new SourceEntity(),
@@ -29,6 +28,7 @@ export default function Home() {
     'maxDate'   : null,
     'targetField' : 'content',
     'targetCardForComparison' : '',
+    'termSecondTree' : '',
     'idfCut' : 5,
     'treeCut' : 0,
     'percentTrain' : 50
@@ -38,11 +38,12 @@ export default function Home() {
     'divider' : '[-.,;!?\\\(\)\"\' ]',
     'ngrams' : 1,
     'minLength' : 2,
-    'case' : '',
+    'case' : 'lower',
     'stopWords' : 'de,em,os',
   });
 
   const [modelTree, setModelTree] = useState({});
+  const [modelTree2, setModelTree2] = useState({});
 
   const setConfigFilterCallback = (newConfig) => {
     setConfigFilter(newConfig)
@@ -75,7 +76,9 @@ export default function Home() {
         <ConfigPanel 
           configInput={configFilter}
           modelTree={modelTree}
+          modelTree2={modelTree2}
           setModelTree={setModelTree}
+          setModelTree2={setModelTree2}
           cardsInput={cardsSource} 
           configToken={configToken}
           setConfigFilterCallback={setConfigFilterCallback} 
@@ -97,6 +100,8 @@ export default function Home() {
         setConfigFilterCallback={setConfigFilterCallback} 
         tree={modelTree}
         setTree={setModelTree}
+        tree2={modelTree2}
+        setTree2={setModelTree2}
         />
 
       <Divider variant="middle" />
@@ -104,10 +109,13 @@ export default function Home() {
       <div style={{ backgroundColor: '#75E6DA'}}>
         <CalcPanel 
           modelTree={modelTree}
+          modelTree2={modelTree2}
           setModelTree={setModelTree}
+          setModelTree2={setModelTree2}
           cardsInput={cardsSource} 
           configToken={configToken}
           configFilter={configFilter}
+          setResults={setResults}
         />
       </div>
     </div>

@@ -1,17 +1,10 @@
 import React, { useEffect, useState } from "react";
 
 import {
-  Button,
-  Grid
+  Button
 } from "@material-ui/core";
 
 import moment from 'moment'
-import PlotByWeek from '../charts/ByWeek';
-import PlotDataHours from '../charts/DataHours';
-import PlotTfIdfByAll from '../charts/TfIdfByAll';
-import PlotPostTime from '../charts/PostTime';
-import PlotComparison from '../charts/Comparison';
-import PlotTree from '../charts/Tree';
 
 import Typography from "@material-ui/core/Typography";
 import { FormattedMessage } from 'react-intl';
@@ -20,24 +13,16 @@ import { calcTfIdfCards } from '../../services/Ai/TfIdf.js';
 
 export default function CalcPanel({ 
   modelTree,
+  modelTree2,
   setModelTree,
+  setModelTree2,
   cardsInput, 
   configToken, 
-  configFilter 
+  configFilter,
+  setResults
 }) {
 
   const [tfIdf, setTfIdf] = useState([]);
-
-  const [plotDataWeek, setPlotDataWeek] = useState({});
-  const [plotDataHours, setPlotDataHours] = useState([]);
-  const [plotDataAll, setPlotDataAll] = useState([]);
-  const [plotDataPosttTime, setPlotDataPostTime] = useState([]);
-
-  const [countWordsGenerated, setWordsGenerated] = useState(0);
-  const [countWordsUsedtree, setWordsUsedtree] = useState(0);
-  const [countWordsUsed, setWordsUsed] = useState(0);
-  const [countDocuments, setCountDocuments] = useState(0);
-  const [countFonts, setCountFonts] = useState(0);
 
   const [limitCount] = useState(10);
   const [similarityList, setSimilarityList] = useState('');
@@ -100,13 +85,17 @@ export default function CalcPanel({
         let day = new Date(cardTfIdf.pubDate).getDay();
         let hour = new Date(cardTfIdf.pubDate).getHours();
 
-        slicedResults.forEach((item) => {
+
+        slicedResults.forEach((item, index) => {
           item['idCard'] = card['idCard'];
+          item['posItem'] = cardTfIdf['posItem'];
+          item['id'] = item['posItem']+'-'+card['idCard'];
           item['dataPub'] = cardTfIdf['pubDate'];
           item['categories'] = cardTfIdf['categories'];
           item['author'] = cardTfIdf['author'];
           item['day'] = day;
           item['hour'] = hour;
+          slicedResults[index] = item
         })
 
         selectedAll = selectedAll.concat(slicedResults);
@@ -141,8 +130,15 @@ export default function CalcPanel({
       }
     }
     counts['countWordsUsedTree'] = dataToTreeFirstSelected.length
-    let dataToTree = [];
+
+    let dataToTree        = [];
+    let dataToTree2_byDoc = {};
+    let dataToTree2       = [];
+    let dataToTree2_keys  = [];
     
+    // console.log(configFilter)
+    // console.log(configFilter?.termSecondTree)
+    // console.log(configToken)
     for(let z in selectedAll){
       let item = selectedAll[z]
       for(let x in dataToTreeFirstSelected){
@@ -150,12 +146,54 @@ export default function CalcPanel({
           item['hour'] = item['hour']+':00h'
           item['day'] = getDayName(item['day'])
           dataToTree.push(item);
+
+
+          if(configFilter?.termSecondTree){
+            if(!dataToTree2_byDoc[item['id']]){
+              dataToTree2_byDoc[item['id']] = [];
+            }
+            dataToTree2_keys[item['term']] = false;
+            dataToTree2_byDoc[item['id']].push(item['term'])
+          }
+
           break;
         }
       }
     }
 
+    if(configFilter?.termSecondTree){
+      let termoEscolhidoParaSegundaArvore = configFilter?.termSecondTree
+
+      for(let i in dataToTree2_byDoc){
+        let part = {};
+        let possuiOTermo = false;
+
+        for(let b in dataToTree2_byDoc[i]){
+          part[dataToTree2_byDoc[i][b]] =  dataToTree2_byDoc[i][b];
+        }
+        // console.log(part)
+        // dataToTree2.push({...part});
+
+        for(let p in part){
+        // dataToTree2.push({...part});
+          if(termoEscolhidoParaSegundaArvore == p){
+            dataToTree2.push({...part, '000class##1' : true});
+          }else{
+            dataToTree2.push({...part, '000class##1' : false});
+          }
+        }
+        // if(termoEscolhidoParaSegundaArvore == p){
+        //   possuiOTermo = true;
+        //   break
+        // }
+        // dataToTree2.push({...{...dataToTree2_keys, ...part}, '000class##1' : possuiOTermo}); 
+      }
+    }
+
+    let keys = Object.keys(dataToTree2_keys)
+
     counts['countWordsUsed'] = selectedAll.length
+
     const selectedAllWihtoutDuplicates = selectedAll.filter(function (item, pos, arrayContent) {
       for (let a in arrayContent) {
         if (pos !== a &&
@@ -167,23 +205,28 @@ export default function CalcPanel({
       return true;
     })
 
-    calcDataTree(dataToTree)
-
-    setWordsUsedtree(counts['countWordsUsedTree']);
-    setWordsGenerated(counts['countWordsGenerated']);
-    setWordsUsed(counts['countWordsUsed']);
-    setCountDocuments(counts['countDocuments']);
-    setCountFonts(counts['countFonts']);
-
-    setPlotDataPostTime(selectedPostsTime);
-    setPlotDataWeek(selectedWeek);
-    setPlotDataHours(selectedHours);
-    setPlotDataAll(selectedAllWihtoutDuplicates);
+    let results = {
+      modelTree           : calcDataTree(dataToTree),
+      modelTree2          : calcDataTree2(dataToTree2, keys),
+      countWordsUsedTree  : counts['countWordsUsedTree'],
+      countWordsGenerated : counts['countWordsGenerated'],
+      countWordsUsed      : counts['countWordsUsed'],
+      countDocuments      : counts['countDocuments'],
+      countFonts          : counts['countFonts'],
+      plotDataPostTime    : selectedPostsTime,
+      plotDataWeek        : selectedWeek,
+      plotDataHours       : selectedHours,
+      plotDataHours       : selectedHours,
+      plotDataAll         : selectedAllWihtoutDuplicates,
+    };
 
     if (configFilter['targetCardForComparison']) {
       let similarity = compareSources();
       setSimilarityList(similarity);
+      results[similarityList] = similarity;
     }
+
+    setResults(results);
   }
 
 
@@ -255,6 +298,68 @@ export default function CalcPanel({
     return array;
   }
 
+
+  const calcDataTree2 = (data, keys) => {
+
+    // console.log([...data])
+    // console.log(configFilter?.termSecondTree)
+
+    if(data.length <= 0 || !configFilter?.termSecondTree){
+      return false;
+    }else if(data.length < 2){
+      alert('Não existem elementos o sufuciente para montar a árvore de decisão')
+      return false;
+    }
+
+    var DecisionTree = require('decision-tree');
+
+    data = shuffle(data)
+    const totalCountData = data.length;
+    let countTrainable = (totalCountData * configFilter.percentTrain / 100)
+
+    var class_name    = "000class##1";
+    // var class_name    = configFilter?.termSecondTree;
+    let training_data = [];
+    let test_data     = [];
+
+    var features = keys;
+    var dt;
+
+    // if(Object.keys(modelTree2).length === 0 ){
+    //   console.log(1)
+      training_data = data.slice(0, countTrainable);
+      test_data = data.slice(countTrainable);
+      dt = new DecisionTree(training_data, class_name, features);
+    // }else{
+    //   console.log(2)
+    //   dt = new DecisionTree(modelTree2.modelTree);
+    //   test_data = data;
+    // }
+
+    // console.log(JSON.stringify(test_data))
+    var accuracy = dt.evaluate(test_data);
+    let modelInJson = dt.toJSON();
+    // if(
+    //     Object.keys(modelTree2).length === 0 || 
+    //     configFilter.percentTrain !== modelTree2.modelTree.percentTrain
+    //   ){
+      modelInJson.date = moment(new Date()).format('Y-MM-DD HH:mm:ss');
+      modelInJson.percentTrain = configFilter.percentTrain;
+    // }else{
+    //   console.log(modelTree2)
+    //   modelInJson.date = modelTree2.modelTree.date;
+    //   modelInJson.percentTrain = modelTree2.modelTree.percentTrain;
+    // }
+
+    let model = {
+      accuracy: accuracy,
+      modelTree: modelInJson
+    };
+
+    setModelTree2(model);
+    return model;
+  }
+
   const calcDataTree = (data) => {
         
     if(data.length <= 0){
@@ -275,6 +380,7 @@ export default function CalcPanel({
     let test_data     = [];
 
     var features = ['hour', "day"];
+    // var features = ["day", "term"];
     var dt;
 
     if(Object.keys(modelTree).length === 0 ){
@@ -299,11 +405,13 @@ export default function CalcPanel({
       modelInJson.date = modelTree.modelTree.date;
       modelInJson.percentTrain = modelTree.modelTree.percentTrain;
     }
-
-    setModelTree({
+    let model = {
       accuracy: accuracy,
       modelTree: modelInJson
-    });
+    };
+
+    setModelTree(model);
+    return model;
   }
 
   const formatDocumentsWithVectors = (vectorFormat) => {
@@ -428,45 +536,7 @@ export default function CalcPanel({
           Executar Cálculos
         </Button>
       </Typography>
-      <div id="linear">
-        <div className="chart"></div>
-        <div className="status"></div>
-        <div id="modelInspectionOutput">
-          <p id="inspectionHeadline"></p>
-          <table id="myTable"></table>
-        </div>
-      </div>
-      <Grid container spacing={2}>
-        <Grid item xs={12}>
-          Quantas palavras geradas : {countWordsGenerated}
-          <br />
-          Quantas palavras apresentadas : {countWordsUsed}
-          <br />
-          Quantos documentos analisados : {countDocuments}
-          <br />
-          Quantas fontes analisadas : {countFonts}
-          <br />
-          Quantos termos únicos usados na árvore : {countWordsUsedtree}
-        </Grid>
-        <Grid item xs={12} style={{overflow:'auto'}}>
-          <PlotTree dataToPlot={modelTree} />
-        </Grid>
-        <Grid item xs={12}>
-          <PlotComparison similarityList={similarityList} />
-        </Grid>
-        <Grid item xs={12}>
-          <PlotPostTime plotDataPosttTime={plotDataPosttTime} />
-        </Grid>
-        <Grid item xs={12}>
-          <PlotTfIdfByAll plotDataAll={plotDataAll} />
-        </Grid>
-        <Grid item xs={12}>
-          <PlotByWeek plotDataWeek={plotDataWeek} />
-        </Grid>
-        <Grid item xs={12}>
-          <PlotDataHours plotDataHours={plotDataHours} />
-        </Grid>
-      </Grid>
+        <br></br>
     </div>
   )
 }

@@ -20,7 +20,9 @@ export default function ConfigPanel({
   configToken,
   cardsInput, 
   modelTree,
+  modelTree2,
   setModelTree,
+  setModelTree2,
   setConfigFilterCallback,
   setCardsSourceCallback,
   setConfigTokenCallback
@@ -85,6 +87,9 @@ export default function ConfigPanel({
     if(data?.modelTree){
       setModelTree(data.modelTree);
     }
+    if(data?.modelTree2){
+      setModelTree2(data.modelTree2);
+    }
   }
 
   const sendBackUpToDownload = async () => {
@@ -105,7 +110,8 @@ export default function ConfigPanel({
       "config"     : configInput,
       "configToken": configToken,
       "cards"      : cardsData,
-      "modelTree" : modelTree
+      "modelTree" : modelTree,
+      "modelTree2" : modelTree2
     };
     return data;
   }

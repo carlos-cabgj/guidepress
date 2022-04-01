@@ -40,6 +40,8 @@ export default function FilteringAndSetPanel({
   configInput,
   tree,
   setTree,
+  tree2,
+  setTree2,
   setConfigFilterCallback
 }) {
 
@@ -99,8 +101,12 @@ export default function FilteringAndSetPanel({
   }
 
   const downloadModelTree = async () => {
-    const name = 'Acc='+tree.accuracy.toString().substr(0,7)+'|Div='+tree.modelTree.percentTrain+'% '+tree.modelTree.date;
-    const format = {"modelTree": tree};
+    const name = '2 Models Tree Div='+tree.modelTree.percentTrain+'% '+tree.modelTree.date;
+    const format = {
+      "modelTree": tree,
+      "modelTree2": tree2
+    };
+
     await sendDownload(name+'.json', format);
   }
 
@@ -229,6 +235,19 @@ export default function FilteringAndSetPanel({
           </Grid>
         </Grid>
         <Grid item xs={4}>
+          <Typography variant="h6" gutterBottom>
+            Termo usado para montar a estrutura da segunda árvore
+          </Typography>
+          <Grid item xs={12}>
+            <TextField 
+              onChange={(event) => handleUpdConfig('termSecondTree', event.target.value)}
+              label="" 
+              type="text"
+              fullWidth
+              value={configInput.termSecondTree}
+              variant="outlined"
+            />
+          </Grid>
         </Grid>
         <Grid item xs={4}>
           <Typography variant="h6" gutterBottom>
@@ -283,10 +302,21 @@ export default function FilteringAndSetPanel({
           <Grid item xs={12}>
             {Object.keys(tree).length > 0  ? 
               <React.Fragment>
-                Acc={tree.accuracy.toString().substr(0,7)}
-                |Div={tree.modelTree.percentTrain}% 
-                <br/>
-                {tree.modelTree.date}
+                {Object.keys(tree).length > 0 && <div> 
+                  T1 Acc={tree.accuracy.toString().substr(0,6)}
+                  |Div={tree.modelTree.percentTrain}% 
+                  <br/>
+                  {tree.modelTree.date}
+                </div>
+                }
+                {Object.keys(tree2).length > 0 && <div> 
+                    T2 Acc={tree2.accuracy.toString().substr(0,6)}
+                    |Div={tree2.modelTree.percentTrain}% 
+                    <br/>
+                    {tree2.modelTree.date}
+                  </div>
+                }
+
                 <Button variant="outlined" 
                   onClick={delModelTree}
                   style={{ margin: '0 5px', color:'red' }}>
